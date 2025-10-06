@@ -1,10 +1,11 @@
-// src/main.cpp
 #include <Arduino.h>
 #include <WebServer.h>
 #include <WiFi.h>
 #include <Config.h>
 #include <PubSubClient.h>
 #include <WiFiClientSecure.h>
+#include <RCSwitch.h>
+
 
 // --- HTTPserver -----
 WebServer server(HTTP_PORT);
@@ -12,6 +13,9 @@ WebServer server(HTTP_PORT);
 // --- WiFi client + MQTT ---
 WiFiClientSecure espClient;   // Secure, bo HiveMQ w chmurze używa TLS
 PubSubClient mqttClient(espClient);
+
+//radio state
+bool lastRadioState = HIGH;
 
 // --- gate control functiions ---
 void openGate(){
@@ -108,6 +112,9 @@ void setup(){
 
   pinMode(RELAY_PIN, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
+
+  pinMode(Radio_PIN, INPUT_PULLUP);
+  lastRadioState = digitalRead(Radio_PIN);
  
   connectWiFi();
   espClient.setInsecure();
@@ -117,6 +124,7 @@ void setup(){
   server.on("/open", handleOpen);
   server.on("/close", handleClose);
   server.begin();
+
 }
 
 void loop(){
@@ -125,4 +133,16 @@ void loop(){
     connectMQTT();
   }
   mqttClient.loop();
+
+  bool currentState = digitalRead(Radio_PIN);
+  if(lastRadioState == HIGH && currentState == LOW){
+    Serial.println("Pilot: ON detected -> OPEN GATE");
+    openGate();
+  }
+  if(lastRadioState == LOW && currentState == HIGH){
+    Serial.println("Pilot: OFF detected -> CLOSE GATE");
+    closeGate();
+  }
+  lastRadioState = currentState;
 }
+

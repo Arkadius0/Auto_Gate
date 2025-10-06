@@ -21,6 +21,7 @@ static const char MQTT_CLIENT_ID[] = "ESP_GATE";
 //---PINS---
 static const int RELAY_PIN = 5;
 static const int LED_PIN = 2;
+static const int Radio_PIN = 14; // port radio 
 
 //---IN226 (I2C) - adress--- 
 static const uint8_t INA_A_ADDR = 0x40;
