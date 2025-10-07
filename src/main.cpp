@@ -5,7 +5,7 @@
 #include <PubSubClient.h>
 #include <WiFiClientSecure.h>
 #include <RCSwitch.h>
-
+#include <INA236.h>
 
 // --- HTTPserver -----
 WebServer server(HTTP_PORT);
@@ -14,25 +14,61 @@ WebServer server(HTTP_PORT);
 WiFiClientSecure espClient;   // Secure, bo HiveMQ w chmurze używa TLS
 PubSubClient mqttClient(espClient);
 
-//radio state
+// --- radio state ---
 bool lastRadioState = HIGH;
+
+// --- INA266 ---
+INA236 inaA, inaB;
+
+enum ActuatorState {STOP, MOVING_FORWARD, MOVING_BACKWARD};
+ActuatorState actuatorAState = STOP;
+ActuatorState actuatorBState = STOP;
+
+// function control actuator 
+void actuatorAForward(){
+  digitalWrite(RPWM_A, HIGH); digitalWrite(LPWM_A, LOW); actuatorAState = MOVING_FORWARD;
+}
+void actuatorABackward(){
+  digitalWrite(RPWM_A, LOW); digitalWrite(LPWM_A, HIGH); actuatorAState = MOVING_BACKWARD;
+}
+void actuatorAStop(){
+  digitalWrite(RPWM_A, LOW); digitalWrite(LPWM_A, LOW); actuatorAState = STOP;
+}
+void actuatorBForward(){
+  digitalWrite(RPWM_B, HIGH); digitalWrite(LPWM_B, LOW); actuatorBState = MOVING_FORWARD;
+}
+void actuatorBBackward(){
+  digitalWrite(RPWM_B, LOW); digitalWrite(LPWM_B, HIGH); actuatorBState = MOVING_BACKWARD;
+}
+void actuatorBStop(){
+  digitalWrite(RPWM_B, LOW); digitalWrite(LPWM_B, LOW); actuatorBState = STOP;
+}
+
+// --- actualization state actuator
+void updateActuator(){
+  switch (actuatorAState)
+  {
+  case MOVING_FORWARD: if (digitalRead(SWA_end)==LOW) actuatorAStop(); break;
+  case MOVING_BACKWARD: if (digitalRead(SWA_start)==LOW) actuatorAStop(); break;
+  case STOP: break;
+  }
+  switch (actuatorBState)
+  {
+  case MOVING_FORWARD: if (digitalRead(SWB_end)==LOW) actuatorAStop(); break;
+  case MOVING_BACKWARD: if (digitalRead(SWB_start)==LOW) actuatorAStop(); break;
+  case STOP: break;
+  }
+}
 
 // --- gate control functiions ---
 void openGate(){
-  Serial.println("Gate: OPEN command");
-  digitalWrite(RELAY_PIN, HIGH);
-  digitalWrite(LED_PIN, HIGH);
-  delay(1000);
-  digitalWrite(RELAY_PIN, LOW);
-  digitalWrite(LED_PIN, LOW);
+ actuatorAForward();
+ actuatorBForward();
 }
 
 void closeGate(){
-  Serial.println("Gate: CLOSE command");
-  digitalWrite(RELAY_PIN, HIGH);
-  digitalWrite(LED_PIN, LOW);
-  delay(1000);
-  digitalWrite(RELAY_PIN, LOW);
+actuatorABackward();
+actuatorBBackward();
 
 }
 
@@ -110,11 +146,15 @@ void setup(){
   Serial.begin(115200);
   delay(100);
 
-  pinMode(RELAY_PIN, OUTPUT);
-  pinMode(LED_PIN, OUTPUT);
-
+  pinMode(RPWM_A, OUTPUT); pinMode(LPWM_A, OUTPUT); pinMode(R_EN_A, OUTPUT); pinMode(L_EN_A, OUTPUT);
+  pinMode(SWA_end, INPUT_PULLUP); pinMode(SWA_start, INPUT_PULLUP);
+  pinMode(RPWM_B, OUTPUT); pinMode(LPWM_B, OUTPUT); pinMode(R_EN_B, OUTPUT); pinMode(L_EN_B, OUTPUT);
+  pinMode(SWB_end, INPUT_PULLUP); pinMode(SWB_start, INPUT_PULLUP);
   pinMode(Radio_PIN, INPUT_PULLUP);
   lastRadioState = digitalRead(Radio_PIN);
+
+  inaA.begin();
+  inaB.begin();
  
   connectWiFi();
   espClient.setInsecure();
@@ -144,5 +184,14 @@ void loop(){
     closeGate();
   }
   lastRadioState = currentState;
+
+  updateActuator();
+
+    float currentA = inaA.getCurrent(); float voltageA = inaA.getBusVoltage();
+    float currentB = inaB.getCurrent(); float voltageB = inaB.getBusVoltage();
+    Serial.print("Actuator A: "); Serial.print(voltageA); Serial.print("V "); Serial.print(currentA); Serial.println("A");
+    Serial.print("Actuator B: "); Serial.print(voltageB); Serial.print("V "); Serial.print(currentB); Serial.println("A");
+
+    delay(200);
 }
 
