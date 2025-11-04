@@ -21,12 +21,12 @@ static const char MQTT_CLIENT_ID[] = "ESP_GATE";
 //---PINS---
 //static const int RELAY_PIN = 5;
 //static const int LED_PIN = 2;
-static const int Radio_PIN = 35; // port radio 
+// static const int Radio_PIN = 35; // port radio 
 //---actuator limit switch---
-constexpr int SWA_start = 3; //  actuator A fully extended
-constexpr int SWA_end = 2;  // actuator A fully retracted
-constexpr int SWB_start = 4; //  actuator B fully extended
-constexpr int SWB_end = 5; // actuator B fully retracted
+constexpr int SWA_start = 2; //  actuator A fully extended
+constexpr int SWA_end = 16;  // actuator A fully retracted
+constexpr int SWB_start = 18; //  actuator B fully extended
+constexpr int SWB_end = 17; // actuator B fully retracted
 
 //---H-Bridge BTS7960---
 // bridge*(A)
@@ -35,17 +35,14 @@ constexpr int LPWM_A = 26;
 constexpr int R_EN_A = 27;
 constexpr int L_EN_A = 14;
 // bridge*(B)
-constexpr int RPWM_B = 33;
-constexpr int LPWM_B = 32;
-constexpr int R_EN_B = 13;
-constexpr int L_EN_B = 12;
+constexpr int RPWM_B = 22;
+constexpr int LPWM_B = 23;
+constexpr int R_EN_B = 21; 
+constexpr int L_EN_B = 32;
 
 //---IN226 (I2C) - adress--- 
 constexpr uint8_t INA_A_ADDR = 0x40;
 constexpr uint8_t INA_B_ADDR = 0x41;
 
-//---433HZ receiver---
-static const int RECV_433_PIN = 15;
-
 //---web---
-static const uint16_t HTTP_PORT= 80;
+constexpr int HTTP_PORT= 80;
