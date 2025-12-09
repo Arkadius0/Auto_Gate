@@ -31,7 +31,7 @@ void handleClose() {
 
 // --- Inicjalizacja routera i start serwera ---
 void initWebServer() {
-  server.on("/", handleRoot);
+server.on("/", handleRoot);
 server.on("/open", handleOpen);
 server.on("/Open", handleOpen);
 server.on("/close", handleClose);

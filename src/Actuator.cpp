@@ -1,48 +1,54 @@
-#include <Actuator.h>
-#include <Config.h>
+#include <Arduino.h>
+#include "Actuator.h"
+#include "Config.h"
+#include "PCA.h"
+#include <Adafruit_PWMServoDriver.h>
 
+extern Adafruit_PWMServoDriver pca;
 ActuatorState actuatorAState = STOP;
 ActuatorState actuatorBState = STOP;
 
 void actuatorAForward() {
-  digitalWrite(RPWM_A, HIGH);
-  digitalWrite(LPWM_A, LOW);
+  pca.setPWM(RPWM_A, 0,4095);
+  pca.setPWM(LPWM_A, 0,0);
+  Serial.printf("A Forward: RPWM_A=%d LPWM_A=%d\n", 4095, 0);
   actuatorAState = MOVING_FORWARD;
 }
 
 void actuatorABackward() {
-  digitalWrite(RPWM_A, LOW);
-  digitalWrite(LPWM_A, HIGH);
+  pca.setPWM(RPWM_A, 0,0);
+  pca.setPWM(LPWM_A, 0,4095);
   actuatorAState = MOVING_BACKWARD;
 }
 
 void actuatorAStop() {
-  digitalWrite(RPWM_A, LOW);
-  digitalWrite(LPWM_A, LOW);
-  digitalWrite(R_EN_A, LOW);
-  digitalWrite(L_EN_A, LOW);
+   pca.setPWM(RPWM_A, 0,0);
+   pca.setPWM(LPWM_A, 0,0);
+   pca.setPWM(R_EN_A, 0,0);
+   pca.setPWM(L_EN_A, 0,0);
   actuatorAState = STOP;
-    Serial.println("STOP");
+    Serial.println("STOP-A");
 }
 
 void actuatorBForward() {
-  digitalWrite(RPWM_B, HIGH);
-  digitalWrite(LPWM_B, LOW);
+   pca.setPWM(RPWM_B, 0,4095);
+   pca.setPWM(LPWM_B, 0,0);
   actuatorBState = MOVING_FORWARD;
 }
 
 void actuatorBBackward() {
-  digitalWrite(RPWM_B, LOW);
-  digitalWrite(LPWM_B, HIGH);
+   pca.setPWM(RPWM_B, 0,0);
+   pca.setPWM(LPWM_B, 0,4095);
   actuatorBState = MOVING_BACKWARD;
 }
 
 void actuatorBStop() {
-  digitalWrite(RPWM_B, LOW);
-  digitalWrite(LPWM_B, LOW);
-  digitalWrite(R_EN_B, LOW);
-  digitalWrite(L_EN_B, LOW);
+   pca.setPWM(RPWM_B, 0,0);
+   pca.setPWM(LPWM_B, 0,0);
+   pca.setPWM(R_EN_B, 0,0);
+   pca.setPWM(L_EN_B, 0,0);
   actuatorBState = STOP;
+  Serial.println("STOP-B");
 }
 
 void updateActuator() {
@@ -72,21 +78,26 @@ void updateActuator() {
 }
 
 void openGate() {
-  digitalWrite(R_EN_A, HIGH);
-  digitalWrite(L_EN_A, HIGH);
-  digitalWrite(R_EN_B, HIGH);
-  digitalWrite(L_EN_B, HIGH);
-  actuatorAForward();
-  actuatorBForward();
-  Serial.println("Opening gate...");
+   pca.setPWM(R_EN_A, 0,4095);
+   pca.setPWM(L_EN_A, 0,4095);
+   pca.setPWM(R_EN_B, 0,4095);
+   pca.setPWM(L_EN_B, 0,4095);
+   actuatorAForward();
+   actuatorBForward();
+   Serial.println("Opening gate...");
 }
 
 void closeGate() {
-  digitalWrite(R_EN_A, HIGH);
-  digitalWrite(L_EN_A, HIGH);
-  digitalWrite(R_EN_B, HIGH);
-  digitalWrite(L_EN_B, HIGH);
-  actuatorABackward();
-  actuatorBBackward();
-  Serial.println("Closing gate...");
+   pca.setPWM(R_EN_A, 0,4095);
+   pca.setPWM(L_EN_A, 0,4095);
+   pca.setPWM(R_EN_B, 0,4095);
+   pca.setPWM(L_EN_B, 0,4095);
+   actuatorABackward();
+   actuatorBBackward();
+   Serial.println("Closing gate...");
+}
+
+void stopGate(){
+    actuatorAStop();
+    actuatorBStop();
 }

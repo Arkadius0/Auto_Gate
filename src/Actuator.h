@@ -1,19 +1,19 @@
 #pragma once
 
-#include <Arduino.h>
-
 enum ActuatorState{STOP, MOVING_FORWARD, MOVING_BACKWARD};
 extern ActuatorState actuatorAState;
 extern ActuatorState actuatorBState;
 
 void actuatorAForward();
-void actuatorABackard();
-void actuatorASTOP();
+void actuatorABackward();
+void actuatorAStop();
 
 void actuatorBForward();
 void actuatorBBackward();
-void actuatorBSTOP();
+void actuatorBStop();
 
 void updateActuator();
+
 void openGate();
 void closeGate();
+void stopGate();
