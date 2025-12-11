@@ -2,6 +2,7 @@
 #include "Config.h"
 #include "Actuator.h"
 #include <RCSwitch.h>
+#include "GateControl.h"
 
 
 RCSwitch rf433;
@@ -21,11 +22,11 @@ void Pilot433(){
 
         if (value == P1ON || value == P2ON) {
             Serial.println("Pilot OK -> ON");
-            openGate();
+            requestOpen();
         } 
         else if (value == P1OFF || value == P2OFF) {
             Serial.println("Pilot OK -> OFF");
-            closeGate();
+            requestClose();
         } 
         else {
             Serial.println("Pilot wrong code");

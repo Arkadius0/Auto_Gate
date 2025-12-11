@@ -2,6 +2,7 @@
 #include "config.h"
 #include "Actuator.h"
 #include <WebServer.h>
+#include "GateControl.h"
 
 // --- Inicjalizacja serwera ---
 WebServer server(HTTP_PORT);
@@ -18,13 +19,13 @@ void handleRoot() {
 }
 
 void handleOpen() {
-  openGate();
+  requestOpen();
   Serial.println("handleOpen() called");
   server.send(200, "text/plain", "Gate opening...");
 }
 
 void handleClose() {
-  closeGate();
+  requestClose();
   Serial.println("handleClosed() called");
   server.send(200, "text/plain", "Gate closing...");
 }

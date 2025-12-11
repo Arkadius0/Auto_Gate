@@ -51,31 +51,31 @@ void actuatorBStop() {
   Serial.println("STOP-B");
 }
 
-void updateActuator() {
-  switch (actuatorAState) {
-    case MOVING_FORWARD:
-      if (digitalRead(SWA_end) == HIGH) actuatorAStop();
-      //Serial.print("SWA_end: "); Serial.println(digitalRead(SWA_end));
-      break;
-    case MOVING_BACKWARD:
-      if (digitalRead(SWA_start) == HIGH) actuatorAStop();
-      //Serial.print("SWA_start: "); Serial.println(digitalRead(SWA_start));
-      break;
-    default: break;
-  }
+// void updateActuator() {
+//   switch (actuatorAState) {
+//     case MOVING_FORWARD:
+//       if (digitalRead(SWA_end) == HIGH) actuatorAStop();
+//       //Serial.print("SWA_end: "); Serial.println(digitalRead(SWA_end));
+//       break;
+//     case MOVING_BACKWARD:
+//       if (digitalRead(SWA_start) == HIGH) actuatorAStop();
+//       //Serial.print("SWA_start: "); Serial.println(digitalRead(SWA_start));
+//       break;
+//     default: break;
+//   }
 
-  switch (actuatorBState) {
-    case MOVING_FORWARD:
-      if (digitalRead(SWB_start) == HIGH) actuatorBStop();
-      //Serial.print("SWB_end: "); Serial.println(digitalRead(SWA_end));
-      break;
-    case MOVING_BACKWARD:
-      if (digitalRead(SWB_end) == HIGH) actuatorBStop();
-      //Serial.print("SWB_start: "); Serial.println(digitalRead(SWA_start));
-      break;
-    default: break;
-  }
-}
+//   switch (actuatorBState) {
+//     case MOVING_FORWARD:
+//       if (digitalRead(SWB_start) == HIGH) actuatorBStop();
+//       //Serial.print("SWB_end: "); Serial.println(digitalRead(SWA_end));
+//       break;
+//     case MOVING_BACKWARD:
+//       if (digitalRead(SWB_end) == HIGH) actuatorBStop();
+//       //Serial.print("SWB_start: "); Serial.println(digitalRead(SWA_start));
+//       break;
+//     default: break;
+//   }
+// }
 
 void openGate() {
    pca.setPWM(R_EN_A, 0,4095);

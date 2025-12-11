@@ -23,6 +23,7 @@ void setup() {
   initINA();
   initPCA();
   RF433Init();
+  gateControlInit();
 
   pinMode(SWA_start, INPUT_PULLUP);
   pinMode(SWA_end, INPUT_PULLUP);
@@ -33,7 +34,7 @@ void setup() {
 void loop() {
   mqttloop();
   webServerLoop();
-  updateActuator();
+  gateControlLoop();
   ProtectA_nonBlocking();
   Pilot433(); 
   delay(100);

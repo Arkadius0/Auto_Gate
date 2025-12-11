@@ -4,6 +4,7 @@
 #include<WiFiClientSecure.h>
 #include<PubSubClient.h>
 #include<Actuator.h>
+#include"GateControl.h"
 
 WiFiClientSecure espClient;
 PubSubClient mqttClient(espClient);
@@ -11,8 +12,8 @@ PubSubClient mqttClient(espClient);
 void mqttCallback(char* topic, byte*playload, unsigned int lenght){
     String msg;
     for(unsigned int i=0; i<lenght; i++) msg += (char)playload[i];
-    if(msg == "OPEN") openGate();
-    else if (msg == "CLOSE") closeGate();
+    if(msg == "OPEN") requestOpen();
+    else if (msg == "CLOSE") requestClose();
 }
 
 void connectWiFi(){

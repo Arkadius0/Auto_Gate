@@ -12,7 +12,7 @@ void actuatorBForward();
 void actuatorBBackward();
 void actuatorBStop();
 
-void updateActuator();
+//void updateActuator();
 
 void openGate();
 void closeGate();

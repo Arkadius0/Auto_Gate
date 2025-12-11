@@ -1,7 +1,23 @@
 #pragma one
 
 #include "Config.h"
+#include <Arduino.h>
 
-void requestGateOpen();
-void requestGateClose();
-void updateGateControl(); 
+typedef enum {
+  GATE_STOPPED,
+  GATE_OPENING,
+  GATE_CLOSING,
+  GATE_OPEN,
+  GATE_CLOSED,
+  GATE_ERROR
+} GateState_t;
+
+void gateControlInit();
+void gateControlLoop();
+
+void requestOpen();
+void requestClose();
+void regusetToggle();
+
+GateState_t getGateState();
+bool isGateBusy();
