@@ -9,7 +9,7 @@ RCSwitch rf433;
 
 void RF433Init(){
     rf433.enableReceive(RFpin);
-    Serial.print("RF433 ok");
+    Serial.println("RF433 ok");
 }
 
 void Pilot433(){

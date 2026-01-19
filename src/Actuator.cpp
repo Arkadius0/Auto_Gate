@@ -11,14 +11,14 @@ ActuatorState actuatorBState = STOP;
 void actuatorAForward() {
   pca.setPWM(RPWM_A, 0,4095);
   pca.setPWM(LPWM_A, 0,0);
-  Serial.printf("A Forward: RPWM_A=%d LPWM_A=%d\n", 4095, 0);
-  actuatorAState = MOVING_FORWARD;
+  //Serial.printf("A Forward: RPWM_A=%d LPWM_A=%d\n", 4095, 0);
+ actuatorAState = MOVING_FORWARD;
 }
 
 void actuatorABackward() {
   pca.setPWM(RPWM_A, 0,0);
   pca.setPWM(LPWM_A, 0,4095);
-  actuatorAState = MOVING_BACKWARD;
+ actuatorAState = MOVING_BACKWARD;
 }
 
 void actuatorAStop() {
@@ -26,8 +26,8 @@ void actuatorAStop() {
    pca.setPWM(LPWM_A, 0,0);
    pca.setPWM(R_EN_A, 0,0);
    pca.setPWM(L_EN_A, 0,0);
-  actuatorAState = STOP;
-    Serial.println("STOP-A");
+ // actuatorAState = STOP;
+   // Serial.println("STOP-A");
 }
 
 void actuatorBForward() {
@@ -47,8 +47,8 @@ void actuatorBStop() {
    pca.setPWM(LPWM_B, 0,0);
    pca.setPWM(R_EN_B, 0,0);
    pca.setPWM(L_EN_B, 0,0);
-  actuatorBState = STOP;
-  Serial.println("STOP-B");
+  //actuatorBState = STOP;
+  //Serial.println("STOP-B");
 }
 
 // void updateActuator() {
@@ -97,7 +97,7 @@ void closeGate() {
    Serial.println("Closing gate...");
 }
 
-void stopGate(){
+void stopGate(){ // for test
     actuatorAStop();
     actuatorBStop();
 }

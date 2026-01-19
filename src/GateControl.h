@@ -17,7 +17,7 @@ void gateControlLoop();
 
 void requestOpen();
 void requestClose();
-void regusetToggle();
+void requestToggle();
 
 GateState_t getGateState();
 bool isGateBusy();

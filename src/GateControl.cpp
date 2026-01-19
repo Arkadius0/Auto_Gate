@@ -10,16 +10,19 @@ extern Adafruit_PWMServoDriver pca;
 
 // --- Timeout and fuses
 static const uint16_t RAMP_TARGET = 4095; // full value PWM
-static const uint16_t RAMP_STEP = 60; //step by step PWM change
+static const uint16_t RAMP_STEP = 120; //step by step PWM change
 static const uint16_t RAMP_INTERVAL_MS = 20; //increasing
 
-static const uint32_t OPERATION_TIMEOUT_MS = 30UL * 1000UL; // max movement time in ms 
+static const uint32_t OPERATION_TIMEOUT_MS = 70UL * 1000UL; // max movement time in ms 
+
+static uint32_t errorStartTime = 0; // czas kiedy brama weszła w stan ERROR
+static const uint32_t ERROR_RESET_DELAY_MS = 2500; // 2,5 sekundy
 
 // --- Interial State ---
 static GateState_t gateState = GATE_STOPPED;
 
 typedef enum {CMD_NONE, CMD_OPEN, CMD_CLOSE} PendingCMD_t;
-static volatile PendingCMD_t pendingCMD = CMD_NONE;
+static PendingCMD_t pendingCMD = CMD_NONE;
 
 // --- Ramp controller for PWM ---
 struct Ramp
@@ -38,12 +41,13 @@ static uint32_t operationStart = 0;
 
 // helper 
 static void setEnableA(uint16_t pwm){
-    pca.setPWM(RPWM_A, 0, pwm);
-    pca.setPWM(LPWM_A, 0, pwm);
+    pca.setPWM(R_EN_A, 0, pwm);
+    pca.setPWM(L_EN_A, 0, pwm);
 }
+
 static void setEnableB(uint16_t pwm){
-    pca.setPWM(RPWM_B, 0, pwm);
-    pca.setPWM(LPWM_B, 0, pwm);
+    pca.setPWM(R_EN_B, 0, pwm);
+    pca.setPWM(L_EN_B, 0, pwm);
 }
 
 // ---Request API---
@@ -53,10 +57,15 @@ void requestOpen(){
 void requestClose(){
     pendingCMD = CMD_CLOSE;
 }
-void regusetToggle(){
+void requestToggle(){
+    if (gateState == GATE_ERROR) {
+       // Serial.println("GateControl: ERROR state, toggle ignored");
+        return;
+    }
+
     if (gateState == GATE_OPEN || gateState == GATE_OPENING) requestClose();
     else if (gateState == GATE_CLOSED || gateState == GATE_CLOSING) requestOpen();
-    else requestOpen(); //default
+    else requestOpen();
 }
 
 GateState_t getGateState() {return gateState;}
@@ -92,7 +101,7 @@ static void updateRamps(){
     if (rampA.active && (now - rampA.lastMillis > RAMP_INTERVAL_MS)){
         rampA.lastMillis = now;
         if (rampA.rampUp){
-            uint32_t v = (u_int32_t)rampA.value + RAMP_STEP;
+            uint32_t v = (uint32_t)rampA.value + RAMP_STEP;
             if (v >= RAMP_TARGET) {rampA.value = RAMP_TARGET; rampA.active = false;}
             else rampA.value = (uint16_t)v;
         } else { //ramp down
@@ -118,11 +127,15 @@ static void updateRamps(){
 }
 
 static void startOpening(){
+    if (gateState == GATE_ERROR) {
+    //Serial.println("GateControl: ERROR state, reset required");
+    return;
+}
     // if already open or opening -> ignore 
     if (gateState == GATE_OPEN || gateState == GATE_OPENING) return;
 
     // Safety: if limit switches indicate open already, set state
-    if (digitalRead(SWA_end) == HIGH && digitalRead(SWB_end) == HIGH ){
+    if (digitalRead(SWA_end) == HIGH && digitalRead(SWB_end) == HIGH){
         gateState = GATE_OPEN;
         Serial.println("Gate already OPEN (limit Switches).");
         return;
@@ -147,10 +160,14 @@ static void startOpening(){
 }
 
 static void startClosing() {
+    if (gateState == GATE_ERROR) {
+    //Serial.println("GateControl: ERROR state, reset required");
+    return;
+}
   if (gateState == GATE_CLOSED || gateState == GATE_CLOSING) return;
 
   // Safety: if limit switches indicate closed already, set state
-  if (digitalRead(SWA_start) == HIGH && digitalRead(SWB_end) == HIGH) {
+  if (digitalRead(SWA_start) == HIGH && digitalRead(SWB_start) == HIGH) {
     gateState = GATE_CLOSED;
     Serial.println("Gate already CLOSED (limit switches).");
     return;
@@ -179,9 +196,12 @@ static void abortMotion(const char *reason) {
   rampA.active = true; rampA.rampUp = false; rampA.lastMillis = millis();
   rampB.active = true; rampB.rampUp = false; rampB.lastMillis = millis();
 
-  // a short timeout before stopping actuators will be handled in update loop
+  // ustaw stan ERROR
   gateState = GATE_ERROR;
   pendingCMD = CMD_NONE;
+
+  // zapisujemy czas wejścia w ERROR
+  errorStartTime = millis();
 }
 
 // --- Evaluate end conditions while moving ---
@@ -193,7 +213,7 @@ static void checkMovementCompletion() {
       return;
     }
 // check limit switches 
- if(digitalRead(SWA_end == HIGH) && digitalRead(SWB_end == HIGH)){
+ if(digitalRead(SWA_end) == HIGH && digitalRead(SWB_end) == HIGH){
     // finish: ramp down then stop actuators
       rampA.active = true; rampA.rampUp = false; rampA.lastMillis = millis();
       rampB.active = true; rampB.rampUp = false; rampB.lastMillis = millis();
@@ -237,9 +257,13 @@ static void finalizeStops(){
             if (gateState == GATE_OPEN){
                 Serial.println("GateControl: OPEN - actuators stopped");
             } else if (gateState == GATE_CLOSED){
-                Serial.println("GateControl: CLOSED - actuators stoped");
+                Serial.println("GateControl: CLOSED - actuators stopped");
             } else if (gateState == GATE_ERROR){
+                static bool printed = false;
+                if(!printed){
                 Serial.println("GateControl: ERROR - actuators stopped");
+                printed = true;
+                }
             }
         }
     }
@@ -247,11 +271,18 @@ static void finalizeStops(){
 
 // main loop to be called often from main loop()
 void gateControlLoop(){
+    if (gateState == GATE_ERROR) {
+    if (millis() - errorStartTime >= ERROR_RESET_DELAY_MS) {
+        gateState = GATE_STOPPED;
+        pendingCMD = CMD_NONE;
+        Serial.println("GateControl: auto-reset from ERROR");
+    }
+}
     //1 Process pending commands 
     if(pendingCMD == CMD_OPEN){
         //if gate is busy opening, ignore; if cloasing we could optionally reverse - here we block reverse to avoid mechanical stress
         if(gateState == GATE_CLOSING){
-            Serial.println("Open request ignored: gate closasung (to avoid reverse)");
+            Serial.println("Open request ignored: gate closing (to avoid reverse)");
             pendingCMD = CMD_NONE;
         } else {
             startOpening();
@@ -272,11 +303,10 @@ void gateControlLoop(){
     checkMovementCompletion();
     //4 When ramps reached 0 after finishing, ensure actuators stopped
     finalizeStops();
-    //5 aleweys call protection check - keep behaviour non-blocking
+    //5 always call protection check - keep behaviour non-blocking
     //(assumes CurrentProtection module updates itself in main loop or I2C reads)
      // If current trip occurs outside movement, we still should stop actuators
-  if (isCurrentTripA() || isCurrentTripB()) {
-    // immediate safety reaction: ramp down and stop
-    abortMotion("current trip detected (external)");
-  }
+    if (!isGateBusy() && (isCurrentTripA() || isCurrentTripB())) {
+        abortMotion("current trip while idle");
+    }
 }

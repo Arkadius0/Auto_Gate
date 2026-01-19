@@ -16,15 +16,19 @@
 void setup() {
   Serial.begin(115200);
   Wire.begin(21, 22); 
+  scanI2C();
+  initPCA();
+  delay(10);
+  gateControlInit();
+  delay(10);
+
   connectWiFi();
   connectMQTT();
   initWebServer();
-  scanI2C();
-  initINA();
-  initPCA();
+ // initINA();
   RF433Init();
-  gateControlInit();
-
+  
+  
   pinMode(SWA_start, INPUT_PULLUP);
   pinMode(SWA_end, INPUT_PULLUP);
   pinMode(SWB_start, INPUT_PULLUP);

@@ -29,8 +29,8 @@ constexpr unsigned long P2OFF = 13504994;
 //---actuator limit switch---
 constexpr int SWA_start = 2; //  actuator A fully extended
 constexpr int SWA_end = 16;  // actuator A fully retracted
-constexpr int SWB_start = 34; //  actuator B fully extended
-constexpr int SWB_end = 35; // actuator B fully retracted
+constexpr int SWB_start = 35; //  actuator B fully extended
+constexpr int SWB_end = 34; // actuator B fully retracted
 
 //---H-Bridge BTS7960---
 // bridge*(A)
@@ -40,13 +40,13 @@ constexpr int R_EN_A = 2;
 constexpr int L_EN_A = 3;
 // bridge*(B)
 constexpr int RPWM_B = 4;
-constexpr int LPWM_B = 10;
+constexpr int LPWM_B = 5;
 constexpr int R_EN_B = 6;
 constexpr int L_EN_B = 7;
 
 //--- IN226 (I2C) - adress--- 
-constexpr uint8_t INA_A_ADDR = 0x40;
-constexpr uint8_t INA_B_ADDR = 0x41;
+constexpr uint8_t INA_A_ADDR = 0x45;
+constexpr uint8_t INA_B_ADDR = 0x40;
 //--- PCA9685 ---
 constexpr uint8_t PCA_ADDR = 0x42;
 //---web---
