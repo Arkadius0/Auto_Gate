@@ -196,15 +196,15 @@ static void abortMotion(const char *reason) {
   rampA.active = true; rampA.rampUp = false; rampA.lastMillis = millis();
   rampB.active = true; rampB.rampUp = false; rampB.lastMillis = millis();
 
-  // ustaw stan ERROR
+  // set ERROR state
   gateState = GATE_ERROR;
   pendingCMD = CMD_NONE;
 
-  // zapisujemy czas wejścia w ERROR
+  // record the time of entry in ERROR
   errorStartTime = millis();
 }
 
-// --- Evaluate end conditions while moving ---
+// evaluate end conditions while moving 
 static void checkMovementCompletion() {
   if (gateState == GATE_OPENING) {
     // check current trips

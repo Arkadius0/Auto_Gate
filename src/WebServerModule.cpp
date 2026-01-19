@@ -4,7 +4,7 @@
 #include <WebServer.h>
 #include "GateControl.h"
 
-// --- Inicjalizacja serwera ---
+// --- Server initialization ---
 WebServer server(HTTP_PORT);
 
 // --- Handlery HTTP ---
@@ -30,7 +30,7 @@ void handleClose() {
   server.send(200, "text/plain", "Gate closing...");
 }
 
-// --- Inicjalizacja routera i start serwera ---
+// --- Initializing the router and starting the server ---
 void initWebServer() {
 server.on("/", handleRoot);
 server.on("/open", handleOpen);
@@ -38,7 +38,7 @@ server.on("/Open", handleOpen);
 server.on("/close", handleClose);
 server.on("/Close", handleClose);
 
-  // obsługa nieznanych ścieżek, w tym favicon.ico
+  // support for unknown paths, including favicon.ico
   server.onNotFound([]() {
     if (server.uri() != "/favicon.ico") {
       Serial.print("Unknown request: ");
@@ -51,7 +51,7 @@ server.on("/Close", handleClose);
   Serial.println("Web server started.");
 }
 
-// --- Obsługa w pętli głównej ---
+// --- Service in the main loop ---
 void webServerLoop() {
   server.handleClient();
 }
